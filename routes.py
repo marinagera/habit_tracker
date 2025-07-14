@@ -29,13 +29,15 @@ def index():
     else:
         selected_date = today_at_midnight()
 
-    habits_on_date = current_app.db.habits.find({
+    habits_on_date = current_app.db.habits.find({  # type: ignore[attr-defined]
         'added': {'$lte': selected_date}
     })
 
     completions = [
         habit['habit']
-        for habit in current_app.db.completions.find({'date': selected_date})
+        for habit in current_app.db.completions.find({  # type: ignore[attr-defined]
+            'date': selected_date
+        })
     ]
     return render_template('index.html', habits=habits_on_date, title='Habit Tracker - Home', completions=completions, selected_date=selected_date)
 
@@ -45,7 +47,7 @@ def add_habit():
     today = today_at_midnight()
 
     if request.method == 'POST':
-        current_app.db.habits.insert_one({
+        current_app.db.habits.insert_one({  # type: ignore[attr-defined]
             '_id': uuid.uuid4().hex,
             'added': today,
             'habit': request.form.get('habit')
@@ -63,7 +65,7 @@ def complete():
         return redirect(url_for('.index'))
 
     date = datetime.datetime.fromisoformat(date_str)
-    current_app.db.completions.insert_one({
+    current_app.db.completions.insert_one({  # type: ignore[attr-defined]
         'date': date,
         'habit': habit
     })
