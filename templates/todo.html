@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+
+{% block sidebar %}
+<nav class="sidebar">
+  <h3>Categories</h3>
+  <ul class="filter-list">
+    <li>
+      <a href="{{ url_for('todo.todo_page', context='all', active=request.args.get('active')) }}"
+         class="{% if not context or context.lower() == 'all' %}active{% endif %}">
+        All
+      </a>
+    </li>
+    <li>
+      <a href="{{ url_for('todo.todo_page', context='personal', active=request.args.get('active')) }}"
+         class="{% if context == 'personal' %}active{% endif %}">
+        Personal
+      </a>
+    </li>
+    <li>
+      <a href="{{ url_for('todo.todo_page', context='work', active=request.args.get('active')) }}"
+         class="{% if context == 'work' %}active{% endif %}">
+        Work
+      </a>
+    </li>
+    <li>
+      <a href="{{ url_for('todo.todo_page', context='grocery', active=request.args.get('active')) }}"
+         class="{% if context == 'grocery' %}active{% endif %}">
+        Grocery
+      </a>
+    </li>
+  </ul>
+
+  <h3>Filters</h3>
+  <form method="get" class="todo-active-filter">
+    <input type="hidden" name="context" value="{{ context }}">
+    <label style="color:white; cursor:pointer;">
+      <input type="checkbox" name="active" value="true"
+             onchange="this.form.submit()" {% if request.args.get('active') == 'true' %}checked{% endif %}>
+      Show only active tasks
+    </label>
+  </form>
+</nav>
+{% endblock %}
+
+{% block main_content %}
+<h2>ToDo List</h2>
+
+<form method="POST" class="todo-form">
+    <input type="text" name="task" placeholder="Add new task" class="form__input" required>
+    <select name="context" class="form__select">
+        <option value="personal">Personal</option>
+        <option value="work">Work</option>
+        <option value="grocery">Grocery</option>
+    </select>
+    <button type="submit" class="form__button">Add Task</button>
+</form>
+
+<ul class="todo-list">
+    {% for task in tasks %}
+        <li class="{{ 'done' if task.done }}">
+          <div class="todo-item">
+            <span class="todo-text">
+              {% if task.done %}
+                <s>{{ task.task }}</s>
+              {% else %}
+                  {{ task.task }}
+              {% endif %}
+            </span>
+            
+            <form method="POST" action="{{ url_for('todo.complete_task', task_id=task._id) }}">
+              <input type="hidden" name="task_id" value="{{ task._id }}">
+              <input type="hidden" name="done" value="{{ task.done }}">
+              <button class="btn btn-complete" type="submit" title="Mark as done">✔️</button>
+            </form>
+            <form method="POST" action="{{ url_for('todo.delete_task', task_id=task._id) }}" class="todo-delete-form">
+                <input type="hidden" name="task_id" value="{{ task._id }}">
+                <button class="btn btn-delete" type="submit" title="Delete Task">🗑️</button>
+            </form>
+            
+          </div>
+            
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

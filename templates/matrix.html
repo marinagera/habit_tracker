@@ -1,0 +1,144 @@
+{% extends "layout.html" %}
+
+{% block sidebar %}
+<nav class="sidebar">
+  <h3>Categories</h3>
+  <ul class="filter-list">
+    <li>
+      <a href="{{ url_for('matrix.matrix_page', context='all', active=request.args.get('active')) }}"
+         class="{% if not context or context.lower() == 'all' %}active{% endif %}">
+        All
+      </a>
+    </li>
+    <li>
+      <a href="{{ url_for('matrix.matrix_page', context='personal', active=request.args.get('active')) }}"
+         class="{% if context == 'personal' %}active{% endif %}">
+        Personal
+      </a>
+    </li>
+    <li>
+      <a href="{{ url_for('matrix.matrix_page', context='work', active=request.args.get('active')) }}"
+         class="{% if context == 'work' %}active{% endif %}">
+        Work
+      </a>
+    </li>
+    <li>
+      <a href="{{ url_for('matrix.matrix_page', context='grocery', active=request.args.get('active')) }}"
+         class="{% if context == 'grocery' %}active{% endif %}">
+        Grocery
+      </a>
+    </li>
+  </ul>
+
+  <h3>Filters</h3>
+  <form method="get" class="todo-active-filter">
+    <input type="hidden" name="context" value="{{ context }}">
+    <label style="color:white; cursor:pointer;">
+      <input type="checkbox" name="active" value="true"
+             onchange="this.form.submit()" {% if request.args.get('active') == 'true' %}checked{% endif %}>
+      Show only active tasks
+    </label>
+  </form>
+</nav>
+{% endblock %}
+
+{% block main_content %}
+<h2>Eisenhower Matrix</h2>
+
+<div class="matrix-grid" >
+    <div class="matrix-quadrant urgent-important">
+        <h3>Urgent & Important</h3>
+        <ul id="list-1" class="task-list" id="urgent-important">
+            {% for task in tasks if task.category == "urgent_important" %}
+                <li data-id="{{ task._id }}">
+                    <span class="todo-text">
+                      {% if task.done %}
+                        <s>{{ task.task }}</s>
+                      {% else %}
+                          {{ task.task }}
+                      {% endif %}
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="matrix-quadrant not-urgent-important" id="not-urgent-important">
+        <h3>Not Urgent & Important</h3>
+        <ul id="list-2" class="task-list">
+            {% for task in tasks if task.category == "not_urgent_important" %}
+                <li data-id="{{ task._id }}">
+                  <span class="todo-text">
+                      {% if task.done %}
+                        <s>{{ task.task }}</s>
+                      {% else %}
+                          {{ task.task }}
+                      {% endif %}
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="matrix-quadrant urgent-not-important" id="urgent-not-important">
+        <h3>Urgent & Not Important</h3>
+        <ul id="list-3" class="task-list">
+            {% for task in tasks if task.category == "urgent_not_important" %}
+                <li data-id="{{ task._id }}">
+                  <span class="todo-text">
+                      {% if task.done %}
+                        <s>{{ task.task }}</s>
+                      {% else %}
+                          {{ task.task }}
+                      {% endif %}
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="matrix-quadrant not-urgent-not-important" id="not-urgent-not-important">
+        <h3>Not Urgent & Not Important</h3>
+        <ul id="list-4" class="task-list">
+            {% for task in tasks if task.category == "not_urgent_not_important" %}
+                <li data-id="{{ task._id }}">
+                  <span class="todo-text">
+                      {% if task.done %}
+                        <s>{{ task.task }}</s>
+                      {% else %}
+                          {{ task.task }}
+                      {% endif %}
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+
+<script>
+  const categories = {
+    'list-1': 'urgent_important',
+    'list-2': 'not_urgent_important',
+    'list-3': 'urgent_not_important',
+    'list-4': 'not_urgent_not_important'
+  };
+
+  Object.keys(categories).forEach((id) => {
+    new Sortable(document.getElementById(id), {
+      group: 'shared',
+      animation: 150,
+      onEnd: function (evt) {
+        const taskId = evt.item.dataset.id;
+        const newCategory = categories[evt.to.id];
+
+        fetch(`/matrix/move/${taskId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ category: newCategory })
+        });
+      }
+    });
+  });
+</script>
+{% endblock %}

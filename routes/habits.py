@@ -2,11 +2,11 @@ import datetime
 import uuid
 from flask import Blueprint, current_app, render_template, request, redirect, url_for
 
-pages = Blueprint("habits", __name__,
-                  template_folder="templates", static_folder="static")
+habits = Blueprint("habits", __name__,
+                   template_folder="templates", static_folder="static")
 
 
-@pages.context_processor
+@habits.context_processor
 def add_calc_date_range():
     def date_range(start: datetime.datetime):
         dates = [start + datetime.timedelta(days=diff)
@@ -21,7 +21,7 @@ def today_at_midnight():
     return datetime.datetime(today.year, today.month, today.day)
 
 
-@pages.route('/')
+@habits.route('/')
 def index():
     date_str = request.args.get('date')
     if date_str:
@@ -42,7 +42,7 @@ def index():
     return render_template('index.html', habits=habits_on_date, title='Habit Tracker - Home', completions=completions, selected_date=selected_date)
 
 
-@pages.route('/add', methods=['GET', 'POST'])
+@habits.route('/add', methods=['GET', 'POST'])
 def add_habit():
     today = today_at_midnight()
 
@@ -56,7 +56,7 @@ def add_habit():
     return render_template('add_habit.html', title='Habit Tracker - Add Habit', selected_date=today)
 
 
-@pages.route('/complete', methods=['POST'])
+@habits.route('/complete', methods=['POST'])
 def complete():
     habit = request.form.get('habitId')
     date_str = request.form.get('date')

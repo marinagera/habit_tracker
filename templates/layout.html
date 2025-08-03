@@ -13,27 +13,61 @@
     
     <body>
         <header class="header">
-            <h1 class="header__logo"><a href="{{ url_for('habits.index') }}" class="header__link">Habits</a></h1>
-            {% if "add" not in request.endpoint %}
-                <a href="{{ url_for('habits.add_habit')}}" class="header__link">+ Add new</a>
-            {% endif %}
+            <div class="header__container">
+                <div class="header__left">
+                    <a href="{{ url_for('habits.index') }}" class="header__logo">MyHabits</a>
+                </div>
+
+                <nav class="header__nav">
+                    <a 
+                        href="{{ url_for('habits.index') }}" 
+                        class="header__link {% if request.endpoint.startswith('habits.') %}header__link--active{% endif %}"
+                    >
+                        Habits
+                    </a>
+                    <a href="{{ url_for('todo.todo_page') }}" 
+                        class="header__link {% if request.endpoint.startswith('todo.') %}header__link--active{% endif %}"
+                    >
+                        ToDo
+                    </a>
+                    <a href="{{ url_for('matrix.matrix_page') }}" 
+                        class="header__link {% if request.endpoint.startswith('matrix.') %}header__link--active{% endif %}"
+                    >
+                        Matrix
+                    </a>
+                </nav>
+            </div>
         </header>
 
-        <main class="main">
-            <section class="dates">
-                {% for date in date_range(selected_date) %}
-                    <a class="dates__link {{ 'dates__link--current' if loop.index0 == 3 else '' }}" 
-                    href="{{ url_for('habits.index', date=date) }}"
-                    >
-                        <time class="date" datetime="{{ date }}">
-                            <span>{{ date.strftime("%a") }}</span>
-                            <span>{{ date.strftime("%d") }}</span>
-                        </time>
-                    </a>
-                {% endfor %}
-            </section>
-            {% block main_content %}
+        <div class="page-container">
+            {% block sidebar %}
             {% endblock %}
-        </main>
+
+            <main class="main">
+                {% if selected_date is defined %}
+                <section class="dates">
+                    <div class="header__actions">
+                        {% if "add" not in request.endpoint %}
+                            <a href="{{ url_for('habits.add_habit') }}" class="header__add-button">+ Add Habit</a>
+                        {% endif %}
+                    </div>
+                    {% for date in date_range(selected_date) %}
+                        <a class="dates__link {{ 'dates__link--current' if loop.index0 == 3 else '' }}" 
+                        href="{{ url_for('habits.index', date=date) }}"
+                        >
+                            <time class="date" datetime="{{ date }}">
+                                <span>{{ date.strftime("%a") }}</span>
+                                <span>{{ date.strftime("%d") }}</span>
+                            </time>
+                        </a>
+                    {% endfor %}
+                </section>
+                {% endif %}
+
+                {% block main_content %}
+                {% endblock %}
+            </main>
+        </div>
+        
     </body>
 </html>
